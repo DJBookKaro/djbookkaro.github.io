@@ -56,7 +56,7 @@ body[data-page="account"] #account,body[data-page="account"] #register,body[data
 .account-tabs{display:flex;gap:8px;overflow-x:auto;padding:5px 1px 14px;scrollbar-width:none;position:sticky;top:70px;background:#0c1224;z-index:20}
 .account-tabs button{white-space:nowrap;flex:0 0 auto;padding:12px 17px;border:1px solid #344261;border-radius:14px;background:#1a243c;color:#c6d2e8;box-shadow:none;font-size:13px}
 .account-tabs button[aria-selected="true"]{background:linear-gradient(125deg,#ffae35,#ff7627);color:#111827;border-color:#ffac43;font-weight:800}
-.account-pane[hidden]{display:none!important}
+.account-pane:not([data-active="true"]){display:none!important}
 body[data-page="account"] .page-intro{padding:12px 0 6px}
 body[data-page="account"] .page-intro h1{font-size:27px}
 body[data-page="account"] .account-card{padding:20px;border-radius:18px}
@@ -95,11 +95,11 @@ const {data:{session:initial}}=await supabase.auth.getSession();session=initial;
 (function(){
 const ids=['account','register','vendorManagement','adminSection'];
 const buttons=Array.from(document.querySelectorAll('.account-tabs [data-pane]'));
-function showPane(id){if(!ids.includes(id))id='account';ids.forEach(x=>{const section=document.getElementById(x);if(section)section.hidden=x!==id});buttons.forEach(b=>{b.setAttribute('aria-selected',String(b.dataset.pane===id))});window.scrollTo({top:0,behavior:'instant'})}
+function showPane(id){if(!ids.includes(id))id='account';ids.forEach(x=>{const section=document.getElementById(x);if(section){section.dataset.active=String(x===id);if(x!=='adminSection')section.hidden=x!==id;else if(x===id)section.hidden=false}});buttons.forEach(b=>{b.setAttribute('aria-selected',String(b.dataset.pane===id))});window.scrollTo({top:0,behavior:'instant'})}
 buttons.forEach(b=>b.addEventListener('click',()=>{history.replaceState(null,'','#'+b.dataset.pane);showPane(b.dataset.pane)}));
 function route(){const hash=location.hash.replace('#','');if(ids.includes(hash))showPane(hash);else showPane('account')}
 window.addEventListener('hashchange',route);route();
 const admin=document.getElementById('adminSection'),adminBtn=document.getElementById('adminTab');
-if(admin&&adminBtn){new MutationObserver(()=>{if(!admin.hidden&&document.querySelector('.account-tabs [aria-selected="true"]')?.dataset.pane!=='adminSection'){adminBtn.hidden=false}}).observe(admin,{attributes:true,attributeFilter:['hidden']})}
+if(admin&&adminBtn){new MutationObserver(()=>{if(!admin.hidden){adminBtn.hidden=false}}).observe(admin,{attributes:true,attributeFilter:['hidden']})}
 })();
 </script></body></html>
