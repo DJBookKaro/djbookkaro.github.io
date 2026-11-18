@@ -11,8 +11,8 @@ const {data,error}=await db.from('vendors').select('id,business_name,city,catego
 if(error){msg(error.message);return}
 const {data:photos}=await db.from('vendor_photos').select('vendor_id,storage_path').in('vendor_id',(data||[]).map(x=>x.id).length?(data||[]).map(x=>x.id):['00000000-0000-0000-0000-000000000000']);
 const {data:packages}=await db.from('vendor_packages').select('vendor_id,id,title,price,description').in('vendor_id',(data||[]).map(x=>x.id).length?(data||[]).map(x=>x.id):['00000000-0000-0000-0000-000000000000']);
-const container=$('marketCards');container.replaceChildren();
-for(const v of data||[]){
+const container=$('marketCards');container.replaceChildren();const searchText=($('search')?.value||'').trim().toLowerCase();const cityText=($('city')?.value||'').trim().toLowerCase();
+for(const v of data||[]){if(searchText&&!(v.business_name+' '+v.category).toLowerCase().includes(searchText))continue;if(cityText&&!v.city.toLowerCase().includes(cityText))continue;
 const card=el('article',null,'market-vendor');
 const photo=(photos||[]).find(p=>p.vendor_id===v.id);
 if(photo){const im=el('img');im.src=db.storage.from('vendor-gallery').getPublicUrl(photo.storage_path).data.publicUrl;im.alt=v.business_name+' actual vendor-uploaded setup photo';im.loading='lazy';card.append(im)}
@@ -57,5 +57,5 @@ const {data:packages}=await db.from('vendor_packages').select('id,title,descript
 for(const p of packages||[]){const item=el('div',null,'market-package');item.append(el('strong',p.title),el('span','₹'+Number(p.price).toLocaleString('en-IN')));if(p.description)item.append(el('p',p.description));const del=el('button','Delete');del.onclick=async()=>{if(!confirm('Delete this package?'))return;const {error}=await db.from('vendor_packages').delete().eq('id',p.id);if(error)alert(error.message);else renderOwner()};item.append(del);panel.append(item)}
 root.append(panel)}
 }
-if($('marketCards'))publicVendors();
+if($('marketCards')){publicVendors();$('find')?.addEventListener('click',publicVendors)}
 if($('marketRoot'))renderOwner();
